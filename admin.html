@@ -1,0 +1,200 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#071525">
+  <meta name="description" content="NEXORA Administration Dashboard">
+
+  <title>NEXORA | Admin Dashboard</title>
+
+  <link rel="stylesheet" href="admin.css">
+  <script src="admin.js" defer></script>
+</head>
+
+<body>
+
+  <div class="admin-layout">
+
+    <aside class="sidebar" id="sidebar">
+
+      <a href="index.html" class="brand">
+        <span class="brand-icon">N</span>
+        <span>NEXORA <small>ADMIN</small></span>
+      </a>
+
+      <div class="admin-profile">
+        <div class="profile-avatar">A</div>
+        <div>
+          <strong>Administrator</strong>
+          <small>مدير المنصة</small>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="لوحة الإدارة">
+
+        <p class="nav-heading">القائمة الرئيسية</p>
+
+        <a href="#dashboard" class="active">◈ الرئيسية</a>
+        <a href="#articles">▤ إدارة المقالات</a>
+        <a href="#courses">▣ إدارة الدورات</a>
+        <a href="#messages">✉ الرسائل</a>
+        <a href="#users">♙ المستخدمون</a>
+
+        <p class="nav-heading">إعدادات المنصة</p>
+
+        <a href="#settings">⚙ الإعدادات</a>
+        <a href="index.html">↗ عرض الموقع</a>
+
+      </nav>
+
+      <div class="sidebar-footer">
+        <span>SECURE THE DIGITAL FUTURE</span>
+        <small>NEXORA © 2026</small>
+      </div>
+
+    </aside>
+
+    <main class="main-content">
+
+      <header class="topbar">
+        <button type="button" id="menuToggle"
+          class="menu-button" aria-label="فتح القائمة">
+          ☰
+        </button>
+
+        <div>
+          <strong>لوحة التحكم</strong>
+          <small>مرحباً بك في إدارة NEXORA</small>
+        </div>
+
+        <span class="admin-status">ADMIN PANEL</span>
+      </header>
+
+      <section class="dashboard-section" id="dashboard">
+
+        <div class="welcome">
+          <span>WELCOME BACK</span>
+          <h1>مرحباً بك في NEXORA</h1>
+          <p>من هنا يمكنك متابعة محتوى المنصة وإدارتها.</p>
+        </div>
+
+        <div class="stats-grid">
+
+          <article class="stat-card">
+            <span>إجمالي المقالات</span>
+            <strong>00</strong>
+            <small>المقالات المنشورة</small>
+          </article>
+
+          <article class="stat-card">
+            <span>الدورات التعليمية</span>
+            <strong>00</strong>
+            <small>الدورات المتاحة</small>
+          </article>
+
+          <article class="stat-card">
+            <span>رسائل التواصل</span>
+            <strong>00</strong>
+            <small>الرسائل المستلمة</small>
+          </article>
+
+          <article class="stat-card">
+            <span>المستخدمون</span>
+            <strong>00</strong>
+            <small>حسابات المنصة</small>
+          </article>
+
+        </div>
+
+        <div class="dashboard-grid">
+
+          <section class="panel" id="articles">
+            <div class="panel-heading">
+              <div>
+                <h2>إدارة المقالات</h2>
+                <p>إضافة وتنظيم المحتوى المنشور.</p>
+              </div>
+              <span class="panel-icon">▤</span>
+            </div>
+
+            <a href="#article-form" class="admin-action">
+              + إضافة مقال جديد
+            </a>
+
+            <p class="empty-state">
+              لا توجد بيانات مقالات مرتبطة حالياً.
+            </p>
+          </section>
+
+          <section class="panel" id="courses">
+            <div class="panel-heading">
+              <div>
+                <h2>إدارة الدورات</h2>
+                <p>تنظيم الدورات التعليمية.</p>
+              </div>
+              <span class="panel-icon">▣</span>
+            </div>
+
+            <a href="#course-form" class="admin-action">
+              + إضافة دورة جديدة
+            </a>
+
+            <p class="empty-state">
+              لا توجد دورات مرتبطة حالياً.
+            </p>
+          </section>
+
+          <section class="panel" id="messages">
+            <div class="panel-heading">
+              <div>
+                <h2>رسائل الزوار</h2>
+                <p>متابعة استفسارات الزوار.</p>
+              </div>
+              <span class="panel-icon">✉</span>
+            </div>
+
+            <p class="empty-state">
+              لا توجد رسائل متصلة بالخادم حالياً.
+            </p>
+          </section>
+
+          <section class="panel" id="users">
+            <div class="panel-heading">
+              <div>
+                <h2>المستخدمون</h2>
+                <p>إدارة حسابات المنصة وصلاحياتها.</p>
+              </div>
+              <span class="panel-icon">♙</span>
+            </div>
+
+            <p class="empty-state">
+              إدارة المستخدمين تتطلب ربط قاعدة البيانات.
+            </p>
+          </section>
+
+        </div>
+
+        <section class="panel settings-panel" id="settings">
+          <h2>إعدادات المنصة</h2>
+          <p>
+            سيتم ربط إعدادات الموقع بالخادم وقاعدة البيانات
+            في مرحلة التطوير القادمة.
+          </p>
+        </section>
+
+        <footer class="admin-footer">
+          NEXORA ADMINISTRATION SYSTEM
+          <span>© 2026</span>
+        </footer>
+
+      </section>
+
+    </main>
+
+  </div>
+
+</body>
+</html>
