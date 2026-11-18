@@ -1,22 +1,26 @@
-
 async function checkAdmin(user) {
+  showStatus("loginStatus", "جاري التحقق من صلاحية المدير...");
+
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id,role")
+    .select("id, role")
     .eq("id", user.id)
     .maybeSingle();
 
-  if (error || !profile || profile.role !== "admin") {
-    await supabase.auth.signOut();
-    currentUser = null;
-
+  if (error) {
+    console.error("Profile error:", error);
     $("adminDashboard").hidden = true;
     $("loginSection").hidden = false;
 
-    showStatus(
-      "loginStatus",
-      "تعذر التحقق من صلاحية المدير: " + (error?.message || "الحساب ليس مديراً")
-    );
+    showStatus("loginStatus", "خطأ قاعدة البيانات: " + error.message);
+    return;
+  }
+
+  if (!profile || profile.role !== "admin") {
+    $("adminDashboard").hidden = true;
+    $("loginSection").hidden = false;
+
+    showStatus("loginStatus", "الحساب لا يمتلك صلاحية المدير.");
     return;
   }
 
@@ -26,6 +30,8 @@ async function checkAdmin(user) {
   $("adminDashboard").hidden = false;
 
   $("adminEmailDisplay").textContent = user.email || "";
+
+  showStatus("loginStatus", "");
 
   await loadArticles();
   await loadMessages();
