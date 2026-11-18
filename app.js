@@ -1,70 +1,81 @@
 
-"use strict";
+const SUPABASE_URL = "https://ujgcdhfldomgdksgkoyy.supabase.co";
 
-document.addEventListener("DOMContentLoaded", () => {
+const SUPABASE_KEY = "sb_publishable_Mewf_vfa7DAngWNoKLnXVA_y7iuToMp";
 
-  // Mobile navigation
+document.addEventListener("DOMContentLoaded", async () => {
+  // القائمة الرئيسية للموبايل
   const menuToggle = document.getElementById("menuToggle");
   const mainNav = document.getElementById("mainNav");
 
   if (menuToggle && mainNav) {
     menuToggle.addEventListener("click", () => {
-      const isOpen = mainNav.classList.toggle("open");
-
-      menuToggle.setAttribute("aria-expanded", String(isOpen));
-      menuToggle.setAttribute(
-        "aria-label",
-        isOpen ? "إغلاق القائمة" : "فتح القائمة"
-      );
+      mainNav.classList.toggle("active");
     });
 
     mainNav.querySelectorAll("a").forEach((link) => {
       link.addEventListener("click", () => {
-        mainNav.classList.remove("open");
-        menuToggle.setAttribute("aria-expanded", "false");
-        menuToggle.setAttribute("aria-label", "فتح القائمة");
+        mainNav.classList.remove("active");
       });
     });
-
-    document.addEventListener("click", (event) => {
-      if (
-        !mainNav.contains(event.target) &&
-        !menuToggle.contains(event.target)
-      ) {
-        mainNav.classList.remove("open");
-        menuToggle.setAttribute("aria-expanded", "false");
-        menuToggle.setAttribute("aria-label", "فتح القائمة");
-      }
-    });
   }
 
-  // Current year
-  const currentYear = document.getElementById("currentYear");
-
-  if (currentYear) {
-    currentYear.textContent = new Date().getFullYear();
+  // السنة الحالية
+  const year = document.getElementById("currentYear");
+  if (year) {
+    year.textContent = new Date().getFullYear();
   }
 
-  // Contact form demo
+  // نموذج التواصل
   const contactForm = document.getElementById("contactForm");
   const formStatus = document.getElementById("formStatus");
 
-  if (contactForm) {
-    contactForm.addEventListener("submit", (event) => {
-      event.preventDefault();
+  if (!contactForm) return;
 
-      if (!contactForm.checkValidity()) {
-        contactForm.reportValidity();
-        return;
-      }
+  contactForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const name = contactForm.elements.namedItem("name").value.trim();
+    const email = contactForm.elements.namedItem("email").value.trim();
+    const message = contactForm.elements.namedItem("message").value.trim();
+
+    if (!name || !email || !message) {
+      if (formStatus) formStatus.textContent = "يرجى ملء جميع الحقول.";
+      return;
+    }
+
+    const submitButton = contactForm.querySelector('[type="submit"]');
+
+    try {
+      if (formStatus) formStatus.textContent = "جاري إرسال رسالتك...";
+      if (submitButton) submitButton.disabled = true;
+
+      const { createClient } = await import(
+        "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
+      );
+
+      const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      const { error } = await supabase
+        .from("contact_messages")
+        .insert([{ name, email, message }]);
+
+      if (error) throw error;
 
       if (formStatus) {
-        formStatus.textContent =
-          "تم التحقق من البيانات بنجاح. هذا نموذج تجريبي ولا يرسل الرسالة إلى الخادم.";
+        formStatus.textContent = "تم إرسال رسالتك بنجاح، شكراً لتواصلك معنا.";
       }
 
       contactForm.reset();
-    });
-  }
 
+    } catch (error) {
+      console.error("Contact form error:", error);
+
+      if (formStatus) {
+        formStatus.textContent = "تعذر إرسال الرسالة. حاول مرة أخرى.";
+      }
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+  });
 });
