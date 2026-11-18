@@ -1,199 +1,198 @@
 
-"use strict";
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 const SUPABASE_URL = "https://ujgcdhfldomgdksgkoyy.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Mewf_vfa7DAngWNoKLnXVA_y7iuToMp";
 
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+
+const $ = (id) => document.getElementById(id);
+
 document.addEventListener("DOMContentLoaded", async () => {
-  const { createClient } = await import(
-    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
-  );
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  const $ = (id) => document.getElementById(id);
-
-  const loginSection = $("loginSection");
-  const dashboard = $("adminDashboard");
-  const loginForm = $("loginForm");
-  const loginStatus = $("loginStatus");
-
-  let currentUser = null;
-
-  // القائمة الجانبية
+  // قائمة الهاتف
   $("menuToggle")?.addEventListener("click", () => {
-    $("sidebar")?.classList.toggle("open");
+    $("sidebar")?.classList.toggle("active");
   });
-
-  // التحقق من المدير
-  async function checkAdmin() {
-    const { data: { user }, error } = await supabase.auth.getUser();
-
-    if (error || !user) {
-      showLogin();
-      return;
-    }
-
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (profileError || !profile || profile.role !== "admin") {
-      await supabase.auth.signOut();
-      showLogin();
-      loginStatus.textContent = "هذا الحساب لا يمتلك صلاحية المدير.";
-      return;
-    }
-
-    currentUser = user;
-    loginSection.hidden = true;
-    dashboard.hidden = false;
-
-    $("adminEmailDisplay").textContent = user.email || "";
-
-    await loadArticles();
-    await loadMessages();
-  }
-
-  function showLogin() {
-    loginSection.hidden = false;
-    dashboard.hidden = true;
-  }
 
   // تسجيل الدخول
-  loginForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    loginStatus.textContent = "جاري تسجيل الدخول...";
-
-    const email = $("adminEmail").value.trim();
-    const password = $("adminPassword").value;
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if (error) {
-      loginStatus.textContent = "فشل تسجيل الدخول. تحقق من البيانات.";
-      return;
-    }
-
-    loginStatus.textContent = "";
-    await checkAdmin();
-  });
+  $("loginForm")?.addEventListener("submit", login);
 
   // تسجيل الخروج
-  $("logoutButton").addEventListener("click", async () => {
-    await supabase.auth.signOut();
-    currentUser = null;
-    showLogin();
-    loginStatus.textContent = "تم تسجيل الخروج.";
-  });
+  $("logoutButton")?.addEventListener("click", logout);
 
-  // تحميل المقالات
-  async function loadArticles() {
-    const list = $("articlesList");
-    list.textContent = "جاري تحميل المقالات...";
+  // حفظ المقال
+  $("articleForm")?.addEventListener("submit", saveArticle);
 
-    const { data, error } = await supabase
-      .from("articles")
-      .select("*")
-      .order("created_at", { ascending: false });
+  // إلغاء التعديل
+  $("cancelEditButton")?.addEventListener("click", resetArticleForm);
 
-    if (error) {
-      list.textContent = "تعذر تحميل المقالات: " + error.message;
-      return;
-    }
+  // التحقق من الجلسة
+  const { data, error } = await supabase.auth.getSession();
 
-    $("articlesCount").textContent = data.length;
-
-    list.replaceChildren();
-
-    if (!data.length) {
-      list.textContent = "لا توجد مقالات حالياً.";
-      return;
-    }
-
-    data.forEach((article) => {
-      const card = document.createElement("article");
-      card.className = "stat-card";
-
-      const title = document.createElement("h3");
-      title.textContent = article.title;
-
-      const status = document.createElement("p");
-      status.textContent = "الحالة: " + article.status;
-
-      const edit = document.createElement("button");
-      edit.type = "button";
-      edit.textContent = "تعديل";
-
-      edit.addEventListener("click", () => {
-        $("articleId").value = article.id;
-        $("articleTitle").value = article.title || "";
-        $("articleSlug").value = article.slug || "";
-        $("articleExcerpt").value = article.excerpt || "";
-        $("articleContent").value = article.content || "";
-        $("articleImage").value = article.image_url || "";
-        $("articleStatus").value = article.status || "draft";
-
-        $("articleForm").scrollIntoView({ behavior: "smooth" });
-      });
-
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.textContent = "حذف";
-
-      remove.addEventListener("click", async () => {
-        if (!confirm("هل تريد حذف هذا المقال؟")) return;
-
-        const { error } = await supabase
-          .from("articles")
-          .delete()
-          .eq("id", article.id);
-
-        if (error) {
-          alert("تعذر الحذف: " + error.message);
-        } else {
-          await loadArticles();
-        }
-      });
-
-      card.append(title, status, edit, remove);
-      list.appendChild(card);
-    });
+  if (error) {
+    showStatus("loginStatus", error.message);
+    return;
   }
 
-  // إضافة أو تعديل مقال
-  $("articleForm").addEventListener("submit", async (event) => {
-    event.preventDefault();
+  if (data.session) {
+    await checkAdmin(data.session.user);
+  }
+});
 
-    if (!currentUser) return;
+// تسجيل الدخول
+async function login(event) {
+  event.preventDefault();
 
-    const id = $("articleId").value;
+  const email = $("adminEmail").value.trim();
+  const password = $("adminPassword").value;
 
-    const article = {
-      title: $("articleTitle").value.trim(),
-      slug: $("articleSlug").value.trim(),
-      excerpt: $("articleExcerpt").value.trim(),
-      content: $("articleContent").value.trim(),
-      image_url: $("articleImage").value.trim() || null,
-      status: $("articleStatus").value,
-      updated_at: new Date().toISOString()
-    };
+  showStatus("loginStatus", "جاري تسجيل الدخول...");
 
-    if (!article.title || !article.slug || !article.content) {
-      $("articleStatusMessage").textContent =
-        "يرجى ملء العنوان والرابط والمحتوى.";
-      return;
-    }
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
 
-    $("saveArticleButton").disabled = true;
-    $("articleStatusMessage").textContent = "جاري الحفظ...";
+  if (error) {
+    showStatus("loginStatus", "تعذر تسجيل الدخول: " + error.message);
+    return;
+  }
 
+  await checkAdmin(data.user);
+}
+
+// التحقق من صلاحية المدير
+async function checkAdmin(user) {
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("id,email,role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (error || !profile || profile.role !== "admin") {
+    await supabase.auth.signOut();
+    currentUser = null;
+
+    $("adminDashboard").hidden = true;
+    $("loginSection").hidden = false;
+
+    showStatus("loginStatus", "هذا الحساب لا يمتلك صلاحية المدير.");
+    return;
+  }
+
+  currentUser = user;
+
+  $("loginSection").hidden = true;
+  $("adminDashboard").hidden = false;
+
+  $("adminEmailDisplay").textContent = user.email || "";
+
+  await loadArticles();
+  await loadMessages();
+  await loadUsers();
+}
+
+// تسجيل الخروج
+async function logout() {
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    alert("تعذر تسجيل الخروج.");
+    return;
+  }
+
+  currentUser = null;
+  $("adminDashboard").hidden = true;
+  $("loginSection").hidden = false;
+
+  $("loginForm")?.reset();
+
+  showStatus("loginStatus", "تم تسجيل الخروج.");
+}
+
+// تحميل المقالات
+async function loadArticles() {
+  const list = $("articlesList");
+
+  if (!list) return;
+
+  list.textContent = "جاري تحميل المقالات...";
+
+  const { data, error } = await supabase
+    .from("articles")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    list.textContent = "تعذر تحميل المقالات: " + error.message;
+    return;
+  }
+
+  $("articlesCount").textContent = data.length;
+
+  list.replaceChildren();
+
+  if (!data.length) {
+    list.textContent = "لا توجد مقالات حالياً.";
+    return;
+  }
+
+  data.forEach((article) => {
+    const card = document.createElement("article");
+    const title = document.createElement("h3");
+    const details = document.createElement("p");
+    const edit = document.createElement("button");
+    const remove = document.createElement("button");
+
+    title.textContent = article.title || "بدون عنوان";
+    details.textContent =
+      "الحالة: " + (article.status === "published" ? "منشور" : "مسودة");
+
+    edit.textContent = "تعديل";
+    remove.textContent = "حذف";
+
+    edit.type = "button";
+    remove.type = "button";
+
+    edit.addEventListener("click", () => editArticle(article));
+
+    remove.addEventListener("click", () => deleteArticle(article.id));
+
+    card.append(title, details, edit, remove);
+    list.appendChild(card);
+  });
+}
+
+// حفظ مقال جديد أو تعديل مقال
+async function saveArticle(event) {
+  event.preventDefault();
+
+  if (!currentUser) return;
+
+  const id = $("articleId").value;
+
+  const article = {
+    title: $("articleTitle").value.trim(),
+    slug: $("articleSlug").value.trim(),
+    excerpt: $("articleExcerpt").value.trim(),
+    content: $("articleContent").value.trim(),
+    image_url: $("articleImage").value.trim() || null,
+    status: $("articleStatus").value,
+    updated_at: new Date().toISOString()
+  };
+
+  if (!article.title || !article.slug || !article.content) {
+    showStatus("articleStatusMessage", "يرجى إكمال الحقول المطلوبة.");
+    return;
+  }
+
+  const button = $("saveArticleButton");
+  button.disabled = true;
+
+  try {
     let result;
 
     if (id) {
@@ -210,80 +209,155 @@ document.addEventListener("DOMContentLoaded", async () => {
         }]);
     }
 
-    $("saveArticleButton").disabled = false;
+    if (result.error) throw result.error;
 
-    if (result.error) {
-      $("articleStatusMessage").textContent =
-        "فشل الحفظ: " + result.error.message;
-      return;
-    }
+    showStatus("articleStatusMessage", "تم حفظ المقال بنجاح.");
 
-    $("articleStatusMessage").textContent = "تم حفظ المقال بنجاح.";
-    $("articleForm").reset();
-    $("articleId").value = "";
-
+    resetArticleForm();
     await loadArticles();
-  });
 
-  // إلغاء التعديل
-  $("cancelEditButton").addEventListener("click", () => {
-    $("articleForm").reset();
-    $("articleId").value = "";
-    $("articleStatusMessage").textContent = "";
-  });
-
-  // تحميل رسائل الزوار
-  async function loadMessages() {
-    const list = $("messagesList");
-    list.textContent = "جاري تحميل الرسائل...";
-
-    const { data, error } = await supabase
-      .from("contact_messages")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      list.textContent = "تعذر تحميل الرسائل: " + error.message;
-      return;
-    }
-
-    $("messagesCount").textContent = data.length;
-    list.replaceChildren();
-
-    if (!data.length) {
-      list.textContent = "لا توجد رسائل حالياً.";
-      return;
-    }
-
-    data.forEach((message) => {
-      const card = document.createElement("article");
-      card.className = "stat-card";
-
-      const name = document.createElement("h3");
-      name.textContent = message.name || "بدون اسم";
-
-      const email = document.createElement("p");
-      email.textContent = message.email || "";
-
-      const content = document.createElement("p");
-      content.textContent = message.message || "";
-
-      const date = document.createElement("small");
-      date.textContent = message.created_at
-        ? new Date(message.created_at).toLocaleString("ar")
-        : "";
-
-      card.append(name, email, content, date);
-      list.appendChild(card);
-    });
-  }
-
-  // فحص جلسة الدخول عند فتح الصفحة
-  try {
-    await checkAdmin();
   } catch (error) {
-    console.error(error);
-    showLogin();
-    loginStatus.textContent = "حدث خطأ أثناء الاتصال. حاول مرة أخرى.";
+    showStatus("articleStatusMessage", "خطأ: " + error.message);
+  } finally {
+    button.disabled = false;
   }
-});
+}
+
+// تعبئة نموذج التعديل
+function editArticle(article) {
+  $("articleId").value = article.id;
+  $("articleTitle").value = article.title || "";
+  $("articleSlug").value = article.slug || "";
+  $("articleExcerpt").value = article.excerpt || "";
+  $("articleContent").value = article.content || "";
+  $("articleImage").value = article.image_url || "";
+  $("articleStatus").value = article.status || "draft";
+
+  $("articleForm").scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+// حذف مقال
+async function deleteArticle(id) {
+  if (!confirm("هل أنت متأكد من حذف هذا المقال؟")) return;
+
+  const { error } = await supabase
+    .from("articles")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    showStatus("articleStatusMessage", error.message);
+    return;
+  }
+
+  showStatus("articleStatusMessage", "تم حذف المقال.");
+  await loadArticles();
+}
+
+// إعادة نموذج المقال
+function resetArticleForm() {
+  $("articleForm")?.reset();
+  $("articleId").value = "";
+}
+
+// تحميل رسائل الزوار
+async function loadMessages() {
+  const list = $("messagesList");
+
+  if (!list) return;
+
+  list.textContent = "جاري تحميل الرسائل...";
+
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    list.textContent = "تعذر تحميل الرسائل: " + error.message;
+    return;
+  }
+
+  $("messagesCount").textContent = data.length;
+
+  list.replaceChildren();
+
+  if (!data.length) {
+    list.textContent = "لا توجد رسائل حالياً.";
+    return;
+  }
+
+  data.forEach((message) => {
+    const card = document.createElement("article");
+    const name = document.createElement("h3");
+    const email = document.createElement("p");
+    const content = document.createElement("p");
+
+    name.textContent = message.name || "زائر";
+    email.textContent = message.email || "";
+    content.textContent = message.message || "";
+
+    card.append(name, email, content);
+    list.appendChild(card);
+  });
+}
+
+// تحميل المستخدمين
+async function loadUsers() {
+  const list = $("usersList");
+
+  if (!list) return;
+
+  list.textContent = "جاري تحميل المستخدمين...";
+  showStatus("usersStatus", "");
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id,email,role")
+    .order("email", { ascending: true });
+
+  if (error) {
+    list.textContent = "تعذر تحميل المستخدمين.";
+    showStatus(
+      "usersStatus",
+      "تحقق من سياسة قراءة جدول profiles للمدير في Supabase. " + error.message
+    );
+    return;
+  }
+
+  $("usersCount").textContent = data.length;
+  list.replaceChildren();
+
+  if (!data.length) {
+    list.textContent = "لا يوجد مستخدمون حالياً.";
+    return;
+  }
+
+  data.forEach((user) => {
+    const card = document.createElement("article");
+    const email = document.createElement("h3");
+    const role = document.createElement("p");
+    const id = document.createElement("small");
+
+    email.textContent = user.email || "بريد غير متوفر";
+
+    role.textContent =
+      user.role === "admin" ? "الصلاحية: مدير" : "الصلاحية: مستخدم";
+
+    id.textContent = "معرّف الحساب: " + user.id;
+
+    card.append(email, role, id);
+    list.appendChild(card);
+  });
+
+  showStatus("usersStatus", "تم تحميل المستخدمين بنجاح.");
+}
+
+// رسائل الحالة
+function showStatus(id, message) {
+  const element = $(id);
+  if (element) element.textContent = message;
+}
