@@ -4,16 +4,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#071525">
   <meta name="robots" content="noindex, nofollow">
-  <title>NEXORA | Admin</title>
+
+  <title>NEXORA | لوحة الإدارة</title>
+
   <link rel="stylesheet" href="admin.css">
   <script src="admin.js" type="module"></script>
 </head>
+
 <body>
 
 <div class="admin-layout">
 
+  <!-- القائمة الجانبية -->
   <aside class="sidebar" id="sidebar">
+
     <a href="index.html" class="brand">
       <span class="brand-icon">N</span>
       <span>NEXORA <small>ADMIN</small></span>
@@ -23,49 +29,84 @@
       <a href="#dashboard">الرئيسية</a>
       <a href="#articles">إدارة المقالات</a>
       <a href="#messages">رسائل الزوار</a>
+      <a href="#users">إدارة المستخدمين</a>
       <a href="index.html">عرض الموقع</a>
     </nav>
 
-    <button id="logoutButton" type="button">تسجيل الخروج</button>
+    <button id="logoutButton" type="button">
+      تسجيل الخروج
+    </button>
+
   </aside>
 
+  <!-- المحتوى الرئيسي -->
   <main class="main-content">
 
     <header class="topbar">
-      <button id="menuToggle" type="button">☰</button>
+
+      <button id="menuToggle" type="button" aria-label="فتح القائمة">
+        ☰
+      </button>
+
       <div>
         <strong>NEXORA ADMIN</strong>
         <small>لوحة إدارة المنصة</small>
       </div>
+
     </header>
 
+    <!-- تسجيل الدخول -->
     <section id="loginSection" class="panel">
+
       <h1>تسجيل دخول المدير</h1>
+
       <p>سجّل الدخول بحساب المدير المسجل في Supabase.</p>
 
       <form id="loginForm">
+
         <label for="adminEmail">البريد الإلكتروني</label>
-        <input id="adminEmail" type="email" required
-          autocomplete="username">
+
+        <input
+          id="adminEmail"
+          type="email"
+          required
+          autocomplete="username"
+        >
 
         <label for="adminPassword">كلمة المرور</label>
-        <input id="adminPassword" type="password" required
-          autocomplete="current-password">
+
+        <input
+          id="adminPassword"
+          type="password"
+          required
+          autocomplete="current-password"
+        >
 
         <button type="submit">دخول</button>
+
       </form>
 
       <p id="loginStatus" role="status"></p>
+
     </section>
 
+    <!-- لوحة المدير -->
     <section id="adminDashboard" hidden>
 
+      <!-- الترحيب -->
       <section id="dashboard" class="welcome">
+
         <h1>مرحباً بك في إدارة NEXORA</h1>
+
+        <p>من هنا يمكنك إدارة المنصة ومحتواها.</p>
+
         <p id="adminEmailDisplay"></p>
+
       </section>
 
+      <!-- الإحصائيات -->
       <div class="stats-grid">
+
         <article class="stat-card">
           <span>المقالات</span>
           <strong id="articlesCount">0</strong>
@@ -75,32 +116,64 @@
           <span>الرسائل</span>
           <strong id="messagesCount">0</strong>
         </article>
+
+        <article class="stat-card">
+          <span>المستخدمون</span>
+          <strong id="usersCount">0</strong>
+        </article>
+
       </div>
 
+      <!-- إدارة المقالات -->
       <section class="panel" id="articles">
+
         <h2>إدارة المقالات</h2>
 
         <form id="articleForm">
+
           <input type="hidden" id="articleId">
 
           <label for="articleTitle">عنوان المقال</label>
-          <input id="articleTitle" type="text"
-            maxlength="200" required>
+
+          <input
+            id="articleTitle"
+            type="text"
+            maxlength="200"
+            required
+          >
 
           <label for="articleSlug">رابط المقال (Slug)</label>
-          <input id="articleSlug" type="text"
-            maxlength="200" required>
+
+          <input
+            id="articleSlug"
+            type="text"
+            maxlength="200"
+            required
+          >
 
           <label for="articleExcerpt">ملخص المقال</label>
-          <textarea id="articleExcerpt" maxlength="500"></textarea>
+
+          <textarea
+            id="articleExcerpt"
+            maxlength="500"
+          ></textarea>
 
           <label for="articleContent">محتوى المقال</label>
-          <textarea id="articleContent" required></textarea>
+
+          <textarea
+            id="articleContent"
+            required
+          ></textarea>
 
           <label for="articleImage">رابط الصورة</label>
-          <input id="articleImage" type="url">
+
+          <input
+            id="articleImage"
+            type="url"
+          >
 
           <label for="articleStatus">حالة المقال</label>
+
           <select id="articleStatus">
             <option value="draft">مسودة</option>
             <option value="published">منشور</option>
@@ -113,23 +186,55 @@
           <button type="button" id="cancelEditButton">
             إلغاء التعديل
           </button>
+
         </form>
 
         <p id="articleStatusMessage" role="status"></p>
 
         <h3>المقالات الحالية</h3>
-        <div id="articlesList">جاري التحميل...</div>
+
+        <div id="articlesList">
+          جاري تحميل المقالات...
+        </div>
+
       </section>
 
+      <!-- رسائل الزوار -->
       <section class="panel" id="messages">
+
         <h2>رسائل الزوار</h2>
+
         <p id="messagesStatus" role="status"></p>
-        <div id="messagesList">جاري التحميل...</div>
+
+        <div id="messagesList">
+          جاري تحميل الرسائل...
+        </div>
+
+      </section>
+
+      <!-- إدارة المستخدمين -->
+      <section class="panel" id="users">
+
+        <h2>إدارة المستخدمين</h2>
+
+        <p>
+          عرض حسابات المستخدمين وأدوارهم المسجلة في قاعدة البيانات.
+        </p>
+
+        <p id="usersStatus" role="status">
+          جاري تحميل المستخدمين...
+        </p>
+
+        <div id="usersList">
+          لا توجد بيانات معروضة حالياً.
+        </div>
+
       </section>
 
     </section>
 
   </main>
+
 </div>
 
 </body>
