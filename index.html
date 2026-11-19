@@ -4,20 +4,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#071525">
+  <meta name="theme-color" content="#05091b">
   <meta name="description" content="NEXORA منصة عراقية متخصصة بالأمن السيبراني والتوعية الرقمية.">
   <meta name="referrer" content="strict-origin-when-cross-origin">
+
   <title>NEXORA | الأمن السيبراني العراقي</title>
+
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
 <header class="header">
   <div class="container nav-container">
+
     <a href="#home" class="logo">NEXORA<span>.</span></a>
 
-    <button id="menuToggle" class="menu-toggle" type="button"
-      aria-label="فتح القائمة" aria-expanded="false">
+    <button id="menuToggle" class="menu-toggle"
+      type="button" aria-label="فتح القائمة"
+      aria-expanded="false">
       ☰
     </button>
 
@@ -29,40 +34,262 @@
       <a href="#articles">المقالات</a>
       <a href="#contact">تواصل معنا</a>
     </nav>
+
   </div>
 </header>
 
 <main>
+
+  <!-- HERO -->
+
   <section class="hero" id="home">
+
     <div class="container hero-content">
+
       <div class="hero-text">
-        <span class="hero-label">IRAQI CYBERSECURITY PLATFORM</span>
-        <h1>نحمي المستقبل<br><span>الرقمي</span></h1>
+
+        <span class="hero-label">
+          IRAQI CYBERSECURITY PLATFORM
+        </span>
+
+        <h1>
+          مستقبل رقمي<br>
+          <span>أكثر أماناً</span>
+        </h1>
+
         <p>
-          NEXORA منصة عراقية تهتم بالأمن السيبراني،
-          وتنشر المعرفة الرقمية، وتساعد على بناء مجتمع
-          تقني أكثر وعياً وأماناً.
+          من قلب العراق ننطلق نحو عالم رقمي أكثر أماناً.
+          NEXORA منصة متخصصة بالأمن السيبراني،
+          تجمع المعرفة والتوعية والتقنيات الحديثة
+          لبناء جيل رقمي واعٍ وقادر على حماية مستقبله.
         </p>
+
         <div class="hero-buttons">
-          <a href="#academy" class="btn btn-primary">ابدأ رحلتك</a>
-          <a href="#about" class="btn btn-outline">اكتشف NEXORA</a>
+          <a href="#academy" class="btn btn-primary">
+            ابدأ رحلتك
+          </a>
+
+          <a href="#about" class="btn btn-outline">
+            اكتشف NEXORA
+          </a>
         </div>
+
+        <div class="hero-tags">
+          <span>Cyber Security</span>
+          <span>Digital Awareness</span>
+          <span>Made in Iraq</span>
+        </div>
+
       </div>
+
+      <!-- DIGITAL SHIELD -->
 
       <div class="hero-visual">
+
         <div class="cyber-circle">
+
           <div class="cyber-inner">
-            <span class="shield">⬡</span>
+
+            <svg class="shield-art"
+              viewBox="0 0 240 260"
+              xmlns="http://www.w3.org/2000/svg"
+              role="img"
+              aria-label="درع حماية رقمية">
+
+              <defs>
+                <linearGradient id="shieldGradient"
+                  x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#55b5ff"/>
+                  <stop offset="50%" stop-color="#8b5cf6"/>
+                  <stop offset="100%" stop-color="#d8b4fe"/>
+                </linearGradient>
+
+                <filter id="shieldGlow">
+                  <feGaussianBlur stdDeviation="5" result="blur"/>
+                  <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+
+              <path
+                d="M120 12 L207 48 V112
+                   C207 174 169 219 120 247
+                   C71 219 33 174 33 112
+                   V48 Z"
+                fill="rgba(57,139,255,.08)"
+                stroke="url(#shieldGradient)"
+                stroke-width="5"
+                filter="url(#shieldGlow)"
+              />
+
+              <path
+                d="M120 36 L185 62 V112
+                   C185 160 157 194 120 219
+                   C83 194 55 160 55 112
+                   V62 Z"
+                fill="none"
+                stroke="#398bff"
+                stroke-width="2"
+                opacity=".6"
+              />
+
+              <rect x="88" y="105" width="64" height="55"
+                rx="12"
+                fill="none"
+                stroke="#c084fc"
+                stroke-width="5"/>
+
+              <path
+                d="M101 105 V87
+                   C101 62 139 62 139 87
+                   V105"
+                fill="none"
+                stroke="#c084fc"
+                stroke-width="6"
+                stroke-linecap="round"/>
+
+              <circle cx="120" cy="130" r="7"
+                fill="#60a5fa"/>
+
+              <path d="M120 137 V148"
+                stroke="#60a5fa"
+                stroke-width="5"
+                stroke-linecap="round"/>
+
+              <circle cx="120" cy="130" r="30"
+                fill="none"
+                stroke="#398bff"
+                stroke-width="1"
+                opacity=".4"/>
+
+            </svg>
+
             <strong>NEXORA</strong>
             <small>SECURE THE FUTURE</small>
+
           </div>
+
         </div>
+
+        <!-- DIGITAL ORBIT -->
+
+        <div class="orbit-label orbit-one">
+          <span>01</span> SECURITY
+        </div>
+
+        <div class="orbit-label orbit-two">
+          <span>02</span> PROTECTION
+        </div>
+
       </div>
+
     </div>
+
   </section>
 
-  <section class="section" id="about">
+  <!-- IRAQ IDENTITY -->
+
+  <section class="iraq-section">
+
+    <div class="container iraq-content">
+
+      <div class="iraq-art">
+
+        <svg viewBox="0 0 300 330"
+          xmlns="http://www.w3.org/2000/svg"
+          role="img"
+          aria-label="رسم فني رقمي مستوحى من خريطة العراق">
+
+          <defs>
+            <linearGradient id="iraqGradient"
+              x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#398bff"/>
+              <stop offset="100%" stop-color="#a855f7"/>
+            </linearGradient>
+
+            <filter id="iraqGlow">
+              <feGaussianBlur stdDeviation="5" result="blur"/>
+              <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+
+          <path
+            d="M100 20
+               L151 29 L174 56 L212 69
+               L203 101 L231 124
+               L215 156 L226 182
+               L198 204 L188 238
+               L158 259 L137 299
+               L113 281 L95 251
+               L68 236 L74 207
+               L48 182 L63 150
+               L51 118 L72 90
+               L67 60 Z"
+            fill="rgba(57,139,255,.08)"
+            stroke="url(#iraqGradient)"
+            stroke-width="4"
+            filter="url(#iraqGlow)"
+          />
+
+          <g fill="#c084fc">
+            <circle cx="110" cy="88" r="5"/>
+            <circle cx="165" cy="130" r="6"/>
+            <circle cx="126" cy="175" r="5"/>
+            <circle cx="177" cy="218" r="5"/>
+            <circle cx="110" cy="247" r="4"/>
+          </g>
+
+          <g stroke="#398bff" stroke-width="1.5"
+            opacity=".8" fill="none">
+            <path d="M110 88 L165 130 L126 175 L177 218"/>
+            <path d="M126 175 L110 247"/>
+            <path d="M165 130 L225 100"/>
+            <path d="M126 175 L55 145"/>
+          </g>
+
+          <g fill="#60a5fa" opacity=".8">
+            <circle cx="225" cy="100" r="3"/>
+            <circle cx="55" cy="145" r="3"/>
+            <circle cx="177" cy="218" r="3"/>
+          </g>
+
+        </svg>
+
+      </div>
+
+      <div class="iraq-text">
+        <span class="hero-label">MADE IN IRAQ</span>
+
+        <h2>من العراق،<br>
+          <span>نحو المستقبل الرقمي</span>
+        </h2>
+
+        <p>
+          نؤمن بأن المعرفة التقنية هي أساس المجتمع الرقمي الآمن.
+          نعمل على نشر ثقافة الأمن السيبراني وتطوير الوعي
+          الرقمي في العراق والمنطقة.
+        </p>
+
+        <a href="#about" class="btn btn-outline">
+          تعرف علينا
+        </a>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- ABOUT -->
+
+  <section class="section about" id="about">
+
     <div class="container">
+
       <div class="section-heading">
         <span>WHO WE ARE</span>
         <h2>من نحن؟</h2>
@@ -70,24 +297,46 @@
       </div>
 
       <div class="cards-grid">
+
         <article class="info-card">
+          <span class="card-number">01</span>
           <h3>رؤيتنا</h3>
-          <p>أن نكون منصة عراقية رائدة في نشر ثقافة الأمن السيبراني.</p>
+          <p>
+            أن نكون منصة عراقية رائدة في نشر ثقافة
+            الأمن السيبراني والمعرفة الرقمية.
+          </p>
         </article>
+
         <article class="info-card">
+          <span class="card-number">02</span>
           <h3>رسالتنا</h3>
-          <p>تقديم المعرفة التقنية والتوعية بالمخاطر الإلكترونية.</p>
+          <p>
+            تقديم المعرفة التقنية والتوعية بالمخاطر
+            الإلكترونية بأسلوب واضح ومبسط.
+          </p>
         </article>
+
         <article class="info-card">
+          <span class="card-number">03</span>
           <h3>هدفنا</h3>
-          <p>بناء مجتمع رقمي يتعلم ويحمي ويساهم في التطور التقني.</p>
+          <p>
+            بناء مجتمع رقمي يتعلم ويحمي ويساهم
+            في التطور التقني.
+          </p>
         </article>
+
       </div>
+
     </div>
+
   </section>
 
+  <!-- ACADEMY -->
+
   <section class="section academy" id="academy">
+
     <div class="container">
+
       <div class="section-heading">
         <span>LEARNING CENTER</span>
         <h2>أكاديمية NEXORA</h2>
@@ -95,56 +344,102 @@
       </div>
 
       <div class="cards-grid">
+
         <article class="info-card">
           <span class="card-number">01</span>
           <h3>أساسيات الأمن السيبراني</h3>
-          <p>تعرف على المفاهيم والتهديدات وطرق الحماية الرقمية.</p>
+          <p>
+            تعرف على المفاهيم والتهديدات
+            وطرق الحماية الرقمية.
+          </p>
         </article>
+
         <article class="info-card">
           <span class="card-number">02</span>
           <h3>أمن الشبكات</h3>
-          <p>تعلم حماية الشبكات ومراقبة حركة البيانات.</p>
+          <p>
+            تعلم حماية الشبكات ومراقبة
+            حركة البيانات.
+          </p>
         </article>
+
         <article class="info-card">
           <span class="card-number">03</span>
           <h3>اختبار الاختراق الأخلاقي</h3>
-          <p>تدرب على الاختبار الأمني ضمن مختبرات قانونية.</p>
+          <p>
+            تدرب على الاختبار الأمني
+            ضمن مختبرات قانونية.
+          </p>
         </article>
+
         <article class="info-card">
           <span class="card-number">04</span>
           <h3>التحليل الجنائي الرقمي</h3>
-          <p>تعرف على الأدلة الرقمية وتحليل الحوادث الأمنية.</p>
+          <p>
+            تعرف على الأدلة الرقمية
+            وتحليل الحوادث الأمنية.
+          </p>
         </article>
+
       </div>
+
     </div>
+
   </section>
 
-  <section class="section" id="services">
+  <!-- SERVICES -->
+
+  <section class="section services" id="services">
+
     <div class="container">
+
       <div class="section-heading">
         <span>OUR SERVICES</span>
         <h2>مجالاتنا وخدماتنا</h2>
+        <p>مساحات للتعلم والتطوير والحماية.</p>
       </div>
 
       <div class="cards-grid">
+
         <article class="info-card">
+          <span class="card-number">⌁</span>
           <h3>التوعية الأمنية</h3>
-          <p>معلومات تساعدك على حماية حساباتك وأجهزتك.</p>
+          <p>
+            معلومات تساعدك على حماية
+            حساباتك وأجهزتك.
+          </p>
         </article>
+
         <article class="info-card">
+          <span class="card-number">⌘</span>
           <h3>المختبرات التعليمية</h3>
-          <p>تدريب عملي في بيئات اختبار آمنة ومصرح بها.</p>
+          <p>
+            تدريب عملي في بيئات اختبار
+            آمنة ومصرح بها.
+          </p>
         </article>
+
         <article class="info-card">
+          <span class="card-number">✧</span>
           <h3>المحتوى التقني</h3>
-          <p>شروحات ومقالات في التكنولوجيا والأمن الرقمي.</p>
+          <p>
+            شروحات ومقالات في التكنولوجيا
+            والأمن الرقمي.
+          </p>
         </article>
+
       </div>
+
     </div>
+
   </section>
 
+  <!-- ARTICLES -->
+
   <section class="section articles" id="articles">
+
     <div class="container">
+
       <div class="section-heading">
         <span>KNOWLEDGE & NEWS</span>
         <h2>المقالات والأخبار</h2>
@@ -152,14 +447,26 @@
       </div>
 
       <div class="news-card">
+
         <h3>مرحباً بك في NEXORA</h3>
-        <p>قريباً ستجد هنا مقالات وأخباراً ودروساً متخصصة بالأمن السيبراني.</p>
+
+        <p>
+          قريباً ستجد هنا مقالات وأخباراً ودروساً
+          متخصصة بالأمن السيبراني.
+        </p>
+
       </div>
+
     </div>
+
   </section>
 
+  <!-- CONTACT -->
+
   <section class="section contact" id="contact">
+
     <div class="container">
+
       <div class="section-heading">
         <span>CONTACT US</span>
         <h2>تواصل معنا</h2>
@@ -167,36 +474,79 @@
       </div>
 
       <form class="contact-form" id="contactForm">
+
         <label for="name">الاسم</label>
-        <input id="name" name="name" type="text"
-          maxlength="80" autocomplete="name" required>
+
+        <input
+          id="name"
+          name="name"
+          type="text"
+          maxlength="80"
+          autocomplete="name"
+          required
+        >
 
         <label for="email">البريد الإلكتروني</label>
-        <input id="email" name="email" type="email"
-          maxlength="120" autocomplete="email" required>
+
+        <input
+          id="email"
+          name="email"
+          type="email"
+          maxlength="120"
+          autocomplete="email"
+          required
+        >
 
         <label for="message">الرسالة</label>
-        <textarea id="message" name="message"
-          rows="5" maxlength="2000" required></textarea>
 
-        <button class="btn btn-primary" type="submit">إرسال</button>
+        <textarea
+          id="message"
+          name="message"
+          rows="5"
+          maxlength="2000"
+          required
+        ></textarea>
+
+        <button class="btn btn-primary" type="submit">
+          إرسال الرسالة
+        </button>
+
         <p id="formStatus" role="status" aria-live="polite">
-          نموذج تجريبي، لا يرسل البيانات حالياً.
+          أهلاً بك في NEXORA.
         </p>
+
       </form>
+
     </div>
+
   </section>
+
 </main>
 
+<!-- FOOTER -->
+
 <footer class="footer">
+
   <div class="container">
-    <a href="#home" class="logo">NEXORA<span>.</span></a>
-    <p>حماية رقمية بهوية عراقية</p>
-    <p>© <span id="currentYear"></span> NEXORA. جميع الحقوق محفوظة.</p>
+
+    <a href="#home" class="logo">
+      NEXORA<span>.</span>
+    </a>
+
+    <p>من العراق، نحو فضاء رقمي أكثر أماناً.</p>
+
+    <p>
+      © <span id="currentYear"></span>
+      NEXORA. جميع الحقوق محفوظة.
+    </p>
+
     <small>SECURE THE DIGITAL FUTURE</small>
+
   </div>
+
 </footer>
 
 <script src="app.js" defer></script>
+
 </body>
 </html>
