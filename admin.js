@@ -405,3 +405,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     showStatus("loginStatus", "حدث خطأ أثناء تشغيل لوحة الإدارة.", "error");
   }
 });
+console.log("NEXORA ADMIN JS WORKING");
