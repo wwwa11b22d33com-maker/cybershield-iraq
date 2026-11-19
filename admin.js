@@ -273,7 +273,7 @@ async function loadMessages() {
   `).join("");
 }
 
-// تحميل المستخدمين
+// تحميل المستخدمين وإدارة صلاحياتهم
 async function loadUsers() {
   const list = $("usersList");
 
@@ -307,10 +307,90 @@ async function loadUsers() {
   list.innerHTML = data.map(user => `
     <article class="admin-item">
       <h3>المستخدم</h3>
+
       <p>رقم الحساب: ${escapeHTML(user.id)}</p>
-      <p>الصلاحية: ${escapeHTML(user.role || "user")}</p>
+
+      <p>
+        الصلاحية الحالية:
+        <strong>${escapeHTML(user.role || "user")}</strong>
+      </p>
+
+      ${user.id !== currentUser.id ? `
+        <select data-role-select="${escapeHTML(user.id)}">
+          <option value="user" ${user.role === "user" ? "selected" : ""}>
+            مستخدم
+          </option>
+
+          <option value="admin" ${user.role === "admin" ? "selected" : ""}>
+            مدير
+          </option>
+        </select>
+
+        <button
+          type="button"
+          data-role-save="${escapeHTML(user.id)}">
+          حفظ الصلاحية
+        </button>
+      ` : `
+        <p>هذا حساب المدير الحالي ولا يمكن تغيير صلاحيته.</p>
+      `}
     </article>
   `).join("");
+
+  list.querySelectorAll("[data-role-save]").forEach(button => {
+    button.addEventListener("click", async () => {
+      const userId = button.dataset.roleSave;
+
+      const select = list.querySelector(
+        `[data-role-select="${userId}"]`
+      );
+
+      if (!select) return;
+
+      const newRole = select.value;
+
+      if (!["admin", "user"].includes(newRole)) {
+        alert("الصلاحية غير صحيحة.");
+        return;
+      }
+
+      if (!confirm("هل تريد تغيير صلاحية هذا المستخدم؟")) {
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "جاري الحفظ...";
+
+      try {
+        const { data: result, error: updateError } =
+          await supabase.rpc("admin_update_user_role", {
+            target_user_id: userId,
+            new_role: newRole
+          });
+
+        if (updateError) {
+          alert("فشل تغيير الصلاحية: " + updateError.message);
+          return;
+        }
+
+        if (result !== true) {
+          alert("لم يتم تأكيد تغيير الصلاحية.");
+          return;
+        }
+
+        alert("تم تغيير صلاحية المستخدم بنجاح.");
+        await loadUsers();
+
+      } catch (error) {
+        console.error(error);
+        alert("حدث خطأ: " + error.message);
+
+      } finally {
+        button.disabled = false;
+        button.textContent = "حفظ الصلاحية";
+      }
+    });
+  });
 
   status("usersStatus", "تم تحميل " + data.length + " مستخدم بنجاح.");
 }
