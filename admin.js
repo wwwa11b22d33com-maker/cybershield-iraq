@@ -1,7 +1,6 @@
 
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-// إعداد اتصال Supabase
 const SUPABASE_URL = "https://ujgcdhfldomgdksgkoyy.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Mewf_vfa7DAngWNoKLnXVA_y7iuToMp";
 
@@ -9,18 +8,15 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentUser = null;
 
-const $ = (id) => document.getElementById(id);
+const $ = id => document.getElementById(id);
 
-function showStatus(id, message, type = "info") {
+function status(id, message) {
   const element = $(id);
-  if (!element) return;
-
-  element.textContent = message;
-  element.dataset.type = type;
+  if (element) element.textContent = message;
 }
 
 function escapeHTML(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
@@ -29,19 +25,27 @@ function escapeHTML(value) {
   })[char]);
 }
 
-function formatDate(value) {
-  if (!value) return "غير محدد";
+// إظهار لوحة الإدارة
+function showDashboard(user) {
+  currentUser = user;
 
-  const date = new Date(value);
+  $("loginSection").hidden = true;
 
-  if (Number.isNaN(date.getTime())) return "غير محدد";
+  const dashboard = $("adminDashboard");
+  dashboard.hidden = false;
+  dashboard.style.display = "block";
+  dashboard.style.visibility = "visible";
+  dashboard.style.minHeight = "500px";
+  dashboard.style.padding = "20px";
 
-  return date.toLocaleString("ar-IQ");
+  $("adminEmailDisplay").textContent = user.email || "";
+
+  console.log("NEXORA DASHBOARD DISPLAYED");
 }
 
-// التحقق من صلاحية المدير
+// التحقق من المدير
 async function checkAdmin(user) {
-  showStatus("loginStatus", "جاري التحقق من صلاحية المدير...");
+  status("loginStatus", "جاري التحقق من صلاحيات المدير...");
 
   const { data: profile, error } = await supabase
     .from("profiles")
@@ -50,42 +54,22 @@ async function checkAdmin(user) {
     .maybeSingle();
 
   if (error) {
-    console.error("Profile error:", error);
-
-    $("adminDashboard").hidden = true;
-    $("loginSection").hidden = false;
-
-    showStatus(
-      "loginStatus",
-      "خطأ قاعدة البيانات: " + error.message,
-      "error"
-    );
+    console.error(error);
+    status("loginStatus", "خطأ قاعدة البيانات: " + error.message);
     return;
   }
 
   if (!profile || profile.role !== "admin") {
     await supabase.auth.signOut();
-
     currentUser = null;
-    $("adminDashboard").hidden = true;
-    $("loginSection").hidden = false;
-
-    showStatus("loginStatus", "هذا الحساب لا يمتلك صلاحية المدير.", "error");
+    status("loginStatus", "هذا الحساب ليس مديراً.");
     return;
   }
 
-  currentUser = user;
-
-  $("loginSection").hidden = true;
-  $("adminDashboard").hidden = false;
-
-  $("adminEmailDisplay").textContent = user.email || "";
-
-  showStatus("loginStatus", "");
+  showDashboard(user);
 
   await loadArticles();
   await loadMessages();
-  await loadUsers();
 }
 
 // تسجيل الدخول
@@ -95,15 +79,10 @@ async function login(event) {
   const email = $("adminEmail").value.trim();
   const password = $("adminPassword").value;
 
-  if (!email || !password) {
-    showStatus("loginStatus", "يرجى إدخال البريد وكلمة المرور.", "error");
-    return;
-  }
+  status("loginStatus", "جاري تسجيل الدخول...");
 
   const button = $("loginForm").querySelector('button[type="submit"]');
-  if (button) button.disabled = true;
-
-  showStatus("loginStatus", "جاري تسجيل الدخول...");
+  button.disabled = true;
 
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -112,22 +91,24 @@ async function login(event) {
     });
 
     if (error) {
-      showStatus("loginStatus", "فشل تسجيل الدخول: " + error.message, "error");
+      status("loginStatus", "خطأ الدخول: " + error.message);
       return;
     }
 
     await checkAdmin(data.user);
+
   } catch (error) {
     console.error(error);
-    showStatus("loginStatus", "حدث خطأ غير متوقع أثناء تسجيل الدخول.", "error");
+    status("loginStatus", "حدث خطأ: " + error.message);
   } finally {
-    if (button) button.disabled = false;
+    button.disabled = false;
   }
 }
 
 // تحميل المقالات
 async function loadArticles() {
   const list = $("articlesList");
+
   if (!list) return;
 
   list.textContent = "جاري تحميل المقالات...";
@@ -138,8 +119,7 @@ async function loadArticles() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    list.textContent = "تعذر تحميل المقالات: " + error.message;
-    console.error(error);
+    list.textContent = "خطأ تحميل المقالات: " + error.message;
     return;
   }
 
@@ -153,14 +133,10 @@ async function loadArticles() {
   list.innerHTML = data.map(article => `
     <article class="admin-item">
       <h3>${escapeHTML(article.title)}</h3>
-      <p>الرابط: ${escapeHTML(article.slug)}</p>
+      <p>${escapeHTML(article.slug)}</p>
       <p>الحالة: ${escapeHTML(article.status)}</p>
-      <button type="button" data-edit="${escapeHTML(article.id)}">
-        تعديل
-      </button>
-      <button type="button" data-delete="${escapeHTML(article.id)}">
-        حذف
-      </button>
+      <button type="button" data-edit="${escapeHTML(article.id)}">تعديل</button>
+      <button type="button" data-delete="${escapeHTML(article.id)}">حذف</button>
     </article>
   `).join("");
 
@@ -177,12 +153,12 @@ async function loadArticles() {
   });
 }
 
-// إضافة أو تعديل مقال
+// حفظ مقال
 async function saveArticle(event) {
   event.preventDefault();
 
   if (!currentUser) {
-    showStatus("articleStatusMessage", "يجب تسجيل الدخول أولاً.", "error");
+    status("articleStatusMessage", "سجّل الدخول أولاً.");
     return;
   }
 
@@ -197,53 +173,30 @@ async function saveArticle(event) {
     status: $("articleStatus").value
   };
 
-  if (!article.title || !article.slug || !article.content) {
-    showStatus("articleStatusMessage", "يرجى إكمال الحقول المطلوبة.", "error");
+  status("articleStatusMessage", "جاري الحفظ...");
+
+  const result = id
+    ? await supabase.from("articles").update(article).eq("id", id)
+    : await supabase.from("articles").insert(article);
+
+  if (result.error) {
+    status("articleStatusMessage", "خطأ: " + result.error.message);
     return;
   }
 
-  const button = $("saveArticleButton");
-  button.disabled = true;
+  status("articleStatusMessage", "تم حفظ المقال بنجاح.");
 
-  showStatus("articleStatusMessage", "جاري حفظ المقال...");
+  $("articleForm").reset();
+  $("articleId").value = "";
+  $("saveArticleButton").textContent = "حفظ المقال";
 
-  try {
-    let result;
-
-    if (id) {
-      result = await supabase
-        .from("articles")
-        .update(article)
-        .eq("id", id);
-    } else {
-      result = await supabase
-        .from("articles")
-        .insert(article);
-    }
-
-    if (result.error) {
-      showStatus(
-        "articleStatusMessage",
-        "تعذر حفظ المقال: " + result.error.message,
-        "error"
-      );
-      return;
-    }
-
-    showStatus("articleStatusMessage", "تم حفظ المقال بنجاح.", "success");
-    resetArticleForm();
-    await loadArticles();
-  } catch (error) {
-    console.error(error);
-    showStatus("articleStatusMessage", "حدث خطأ أثناء حفظ المقال.", "error");
-  } finally {
-    button.disabled = false;
-  }
+  await loadArticles();
 }
 
 // تعديل مقال
 function editArticle(id, articles) {
   const article = articles.find(item => String(item.id) === String(id));
+
   if (!article) return;
 
   $("articleId").value = article.id;
@@ -256,15 +209,12 @@ function editArticle(id, articles) {
 
   $("saveArticleButton").textContent = "تحديث المقال";
 
-  $("articleForm").scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
+  $("articleForm").scrollIntoView({ behavior: "smooth" });
 }
 
 // حذف مقال
 async function deleteArticle(id) {
-  if (!confirm("هل أنت متأكد من حذف هذا المقال؟")) return;
+  if (!confirm("هل تريد حذف هذا المقال؟")) return;
 
   const { error } = await supabase
     .from("articles")
@@ -272,24 +222,25 @@ async function deleteArticle(id) {
     .eq("id", id);
 
   if (error) {
-    showStatus("articleStatusMessage", "تعذر حذف المقال: " + error.message, "error");
+    status("articleStatusMessage", "خطأ الحذف: " + error.message);
     return;
   }
 
-  showStatus("articleStatusMessage", "تم حذف المقال.", "success");
+  status("articleStatusMessage", "تم حذف المقال.");
   await loadArticles();
 }
 
-// تفريغ نموذج المقال
+// إعادة ضبط نموذج المقال
 function resetArticleForm() {
   $("articleForm").reset();
   $("articleId").value = "";
   $("saveArticleButton").textContent = "حفظ المقال";
 }
 
-// تحميل رسائل الزوار
+// تحميل الرسائل
 async function loadMessages() {
   const list = $("messagesList");
+
   if (!list) return;
 
   list.textContent = "جاري تحميل الرسائل...";
@@ -300,59 +251,23 @@ async function loadMessages() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    list.textContent = "تعذر تحميل الرسائل: " + error.message;
-    console.error(error);
+    list.textContent = "خطأ تحميل الرسائل: " + error.message;
     return;
   }
 
   $("messagesCount").textContent = data.length;
 
   if (!data.length) {
-    list.textContent = "لا توجد رسائل حالياً.";
+    list.textContent = "لا توجد رسائل.";
     return;
   }
 
   list.innerHTML = data.map(message => `
     <article class="admin-item">
-      <h3>${escapeHTML(message.subject || "رسالة من زائر")}</h3>
-      <p>الاسم: ${escapeHTML(message.name || message.full_name || "غير محدد")}</p>
+      <h3>${escapeHTML(message.subject || "رسالة زائر")}</h3>
+      <p>الاسم: ${escapeHTML(message.name || "غير محدد")}</p>
       <p>البريد: ${escapeHTML(message.email || "غير محدد")}</p>
-      <p>الرسالة: ${escapeHTML(message.message || message.content || "")}</p>
-      <p>التاريخ: ${escapeHTML(formatDate(message.created_at))}</p>
-    </article>
-  `).join("");
-}
-
-// تحميل المستخدمين
-async function loadUsers() {
-  const list = $("usersList");
-  if (!list) return;
-
-  list.textContent = "جاري تحميل المستخدمين...";
-
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id, role")
-    .order("id", { ascending: true });
-
-  if (error) {
-    list.textContent = "تعذر تحميل المستخدمين: " + error.message;
-    console.error(error);
-    return;
-  }
-
-  $("usersCount").textContent = data.length;
-
-  if (!data.length) {
-    list.textContent = "لا توجد حسابات مسجلة.";
-    return;
-  }
-
-  list.innerHTML = data.map(user => `
-    <article class="admin-item">
-      <p>معرّف المستخدم:</p>
-      <code>${escapeHTML(user.id)}</code>
-      <p>الصلاحية: ${escapeHTML(user.role || "user")}</p>
+      <p>الرسالة: ${escapeHTML(message.message || "")}</p>
     </article>
   `).join("");
 }
@@ -362,47 +277,44 @@ async function logout() {
   const { error } = await supabase.auth.signOut();
 
   if (error) {
-    alert("تعذر تسجيل الخروج: " + error.message);
+    alert(error.message);
     return;
   }
 
   currentUser = null;
 
   $("adminDashboard").hidden = true;
+  $("adminDashboard").style.display = "";
+
   $("loginSection").hidden = false;
   $("loginForm").reset();
-
-  showStatus("loginStatus", "تم تسجيل الخروج.");
 }
 
 // تشغيل الصفحة
 document.addEventListener("DOMContentLoaded", async () => {
-  $("loginForm")?.addEventListener("submit", login);
+  $("loginForm").addEventListener("submit", login);
 
-  $("articleForm")?.addEventListener("submit", saveArticle);
+  $("articleForm").addEventListener("submit", saveArticle);
 
-  $("cancelEditButton")?.addEventListener("click", resetArticleForm);
+  $("cancelEditButton").addEventListener("click", resetArticleForm);
 
-  $("logoutButton")?.addEventListener("click", logout);
+  $("logoutButton").addEventListener("click", logout);
 
-  $("menuToggle")?.addEventListener("click", () => {
-    $("sidebar")?.classList.toggle("active");
+  $("menuToggle").addEventListener("click", () => {
+    $("sidebar").classList.toggle("active");
   });
 
   try {
     const { data, error } = await supabase.auth.getSession();
 
-    if (error) {
-      showStatus("loginStatus", "تعذر استعادة الجلسة: " + error.message, "error");
-      return;
-    }
+    if (error) throw error;
 
     if (data.session?.user) {
       await checkAdmin(data.session.user);
     }
   } catch (error) {
-    console.error("Startup error:", error);
-    showStatus("loginStatus", "حدث خطأ أثناء تشغيل لوحة الإدارة.", "error");
+    console.error(error);
+    status("loginStatus", "خطأ تشغيل لوحة الإدارة: " + error.message);
   }
 });
-console.log("NEXORA ADMIN JS WORKING");
+
