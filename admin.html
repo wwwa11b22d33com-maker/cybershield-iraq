@@ -1,4 +1,4 @@
-
+الكتابة
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -30,6 +30,7 @@
       <a href="#articles">إدارة المقالات</a>
       <a href="#messages">رسائل الزوار</a>
       <a href="#users">إدارة المستخدمين</a>
+      <a href="#notifications">الإشعارات</a>
       <a href="index.html">عرض الموقع</a>
     </nav>
 
@@ -65,7 +66,6 @@
       <form id="loginForm">
 
         <label for="adminEmail">البريد الإلكتروني</label>
-
         <input
           id="adminEmail"
           type="email"
@@ -74,7 +74,6 @@
         >
 
         <label for="adminPassword">كلمة المرور</label>
-
         <input
           id="adminPassword"
           type="password"
@@ -134,7 +133,6 @@
           <input type="hidden" id="articleId">
 
           <label for="articleTitle">عنوان المقال</label>
-
           <input
             id="articleTitle"
             type="text"
@@ -143,7 +141,6 @@
           >
 
           <label for="articleSlug">رابط المقال (Slug)</label>
-
           <input
             id="articleSlug"
             type="text"
@@ -152,28 +149,24 @@
           >
 
           <label for="articleExcerpt">ملخص المقال</label>
-
           <textarea
             id="articleExcerpt"
             maxlength="500"
           ></textarea>
 
           <label for="articleContent">محتوى المقال</label>
-
           <textarea
             id="articleContent"
             required
           ></textarea>
 
           <label for="articleImage">رابط الصورة</label>
-
           <input
             id="articleImage"
             type="url"
           >
 
           <label for="articleStatus">حالة المقال</label>
-
           <select id="articleStatus">
             <option value="draft">مسودة</option>
             <option value="published">منشور</option>
@@ -228,6 +221,40 @@
         <div id="usersList">
           لا توجد بيانات معروضة حالياً.
         </div>
+
+      </section>
+
+      <!-- نظام إشعارات NEXORA -->
+      <section class="panel" id="notifications">
+
+        <h2>الإشعارات</h2>
+
+        <p>
+          الإشعارات الجديدة:
+          <strong id="unreadNotificationsCount">0</strong>
+        </p>
+
+        <p id="notificationsStatus" role="status">
+          جاري تحميل الإشعارات...
+        </p>
+
+        <div id="notificationsList">
+          لا توجد إشعارات حالياً.
+        </div>
+
+        <button
+          type="button"
+          id="refreshNotificationsButton"
+        >
+          تحديث الإشعارات
+        </button>
+
+        <button
+          type="button"
+          id="markAllNotificationsReadButton"
+        >
+          تحديد الكل كمقروء
+        </button>
 
       </section>
 
