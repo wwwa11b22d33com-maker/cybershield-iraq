@@ -19,7 +19,18 @@ function showStatus(message, type = "error") {
   status.hidden = false;
 }
 
+function hideStatus() {
+  const status = $("loginStatus");
+  if (status) {
+    status.textContent = "";
+    status.hidden = true;
+  }
+}
+
 async function checkAdmin(user) {
+  const dashboard = $("adminDashboard");
+  const loginSection = $("loginSection");
+
   const { data: profile, error } = await supabase
     .from("profiles")
     .select("id, role")
@@ -30,34 +41,54 @@ async function checkAdmin(user) {
     await supabase.auth.signOut();
     currentUser = null;
 
-    $("adminDashboard").hidden = true;
-    $("loginSection").hidden = false;
+    dashboard.hidden = true;
+    loginSection.hidden = false;
 
-    showStatus("هذا الحساب لا يملك صلاحية المدير.");
+    showStatus(
+      error
+        ? "تعذر التحقق من صلاحيات الحساب: " + error.message
+        : "هذا الحساب لا يملك صلاحية المدير."
+    );
+
     return false;
   }
 
   currentUser = user;
 
-  $("loginSection").hidden = true;
-  $("adminDashboard").hidden = false;
+  loginSection.hidden = true;
+  dashboard.hidden = false;
+
+  const emailDisplay = $("adminEmailDisplay");
+  if (emailDisplay) {
+    emailDisplay.textContent = "مرحباً: " + user.email;
+  }
 
   return true;
 }
 
 async function login(event) {
+  // منع تحديث الصفحة عند إرسال النموذج
   event.preventDefault();
+  event.stopPropagation();
 
-  const email = $("adminEmail").value.trim();
-  const password = $("adminPassword").value;
+  hideStatus();
+
+  const emailInput = $("adminEmail");
+  const passwordInput = $("adminPassword");
+  const loginButton = $("loginButton");
+
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
 
   if (!email || !password) {
     showStatus("يرجى إدخال البريد الإلكتروني وكلمة المرور.");
     return;
   }
 
-  const loginButton = $("loginButton");
-  if (loginButton) loginButton.disabled = true;
+  if (loginButton) {
+    loginButton.disabled = true;
+    loginButton.textContent = "جارٍ تسجيل الدخول...";
+  }
 
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -70,32 +101,56 @@ async function login(event) {
       return;
     }
 
-    await checkAdmin(data.user);
+    const success = await checkAdmin(data.user);
+
+    if (success) {
+      hideStatus();
+    }
 
   } catch (error) {
-    showStatus("حدث خطأ: " + error.message);
+    showStatus("حدث خطأ غير متوقع: " + error.message);
   } finally {
-    if (loginButton) loginButton.disabled = false;
+    if (loginButton) {
+      loginButton.disabled = false;
+      loginButton.textContent = "دخول";
+    }
   }
 }
 
 async function logout() {
-  await supabase.auth.signOut();
-  currentUser = null;
+  try {
+    const { error } = await supabase.auth.signOut();
 
-  $("adminDashboard").hidden = true;
-  $("loginSection").hidden = false;
+    if (error) {
+      showStatus("تعذر تسجيل الخروج: " + error.message);
+      return;
+    }
 
-  $("adminEmail").value = "";
-  $("adminPassword").value = "";
+    currentUser = null;
+
+    $("adminDashboard").hidden = true;
+    $("loginSection").hidden = false;
+
+    $("adminEmail").value = "";
+    $("adminPassword").value = "";
+
+    hideStatus();
+
+  } catch (error) {
+    showStatus("حدث خطأ أثناء تسجيل الخروج.");
+  }
 }
 
 async function initialize() {
   const loginForm = $("loginForm");
 
-  if (loginForm) {
-    loginForm.addEventListener("submit", login);
+  if (!loginForm) {
+    console.error("لم يتم العثور على نموذج تسجيل الدخول.");
+    return;
   }
+
+  // منع الإرسال الافتراضي وتحديث الصفحة
+  loginForm.addEventListener("submit", login);
 
   const logoutButton = $("logoutButton");
 
@@ -103,10 +158,21 @@ async function initialize() {
     logoutButton.addEventListener("click", logout);
   }
 
-  const { data: { session } } = await supabase.auth.getSession();
+  try {
+    const { data, error } = await supabase.auth.getSession();
 
-  if (session) {
-    await checkAdmin(session.user);
+    if (error) {
+      showStatus("تعذر استعادة جلسة الدخول.");
+      return;
+    }
+
+    if (data.session) {
+      await checkAdmin(data.session.user);
+    }
+
+  } catch (error) {
+    showStatus("تعذر الاتصال بخدمة تسجيل الدخول.");
+    console.error(error);
   }
 }
 
