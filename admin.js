@@ -1,4 +1,4 @@
-
+الكتابة
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 const SUPABASE_URL = "https://ujgcdhfldomgdksgkoyy.supabase.co";
@@ -25,13 +25,17 @@ function escapeHTML(value) {
   })[char]);
 }
 
+// =====================================
 // إظهار لوحة الإدارة
+// =====================================
+
 function showDashboard(user) {
   currentUser = user;
 
   $("loginSection").hidden = true;
 
   const dashboard = $("adminDashboard");
+
   dashboard.hidden = false;
   dashboard.style.display = "block";
   dashboard.style.visibility = "visible";
@@ -43,7 +47,10 @@ function showDashboard(user) {
   console.log("NEXORA DASHBOARD DISPLAYED");
 }
 
+// =====================================
 // التحقق من المدير
+// =====================================
+
 async function checkAdmin(user) {
   status("loginStatus", "جاري التحقق من صلاحيات المدير...");
 
@@ -61,8 +68,11 @@ async function checkAdmin(user) {
 
   if (!profile || profile.role !== "admin") {
     await supabase.auth.signOut();
+
     currentUser = null;
+
     status("loginStatus", "هذا الحساب ليس مديراً.");
+
     return;
   }
 
@@ -71,9 +81,13 @@ async function checkAdmin(user) {
   await loadArticles();
   await loadMessages();
   await loadUsers();
+  await loadNotifications();
 }
 
+// =====================================
 // تسجيل الدخول
+// =====================================
+
 async function login(event) {
   event.preventDefault();
 
@@ -83,6 +97,7 @@ async function login(event) {
   status("loginStatus", "جاري تسجيل الدخول...");
 
   const button = $("loginForm").querySelector('button[type="submit"]');
+
   button.disabled = true;
 
   try {
@@ -101,12 +116,16 @@ async function login(event) {
   } catch (error) {
     console.error(error);
     status("loginStatus", "حدث خطأ: " + error.message);
+
   } finally {
     button.disabled = false;
   }
 }
 
+// =====================================
 // تحميل المقالات
+// =====================================
+
 async function loadArticles() {
   const list = $("articlesList");
 
@@ -124,319 +143,11 @@ async function loadArticles() {
     return;
   }
 
-  $("articlesCount").textContent = data.length;
+  if ($("articlesCount")) {
+    $("articlesCount").textContent = data.length;
+  }
 
   if (!data.length) {
     list.textContent = "لا توجد مقالات حالياً.";
     return;
   }
-
-  list.innerHTML = data.map(article => `
-    <article class="admin-item">
-      <h3>${escapeHTML(article.title)}</h3>
-      <p>${escapeHTML(article.slug)}</p>
-      <p>الحالة: ${escapeHTML(article.status)}</p>
-      <button type="button" data-edit="${escapeHTML(article.id)}">تعديل</button>
-      <button type="button" data-delete="${escapeHTML(article.id)}">حذف</button>
-    </article>
-  `).join("");
-
-  list.querySelectorAll("[data-edit]").forEach(button => {
-    button.addEventListener("click", () => {
-      editArticle(button.dataset.edit, data);
-    });
-  });
-
-  list.querySelectorAll("[data-delete]").forEach(button => {
-    button.addEventListener("click", () => {
-      deleteArticle(button.dataset.delete);
-    });
-  });
-}
-
-// حفظ مقال
-async function saveArticle(event) {
-  event.preventDefault();
-
-  if (!currentUser) {
-    status("articleStatusMessage", "سجّل الدخول أولاً.");
-    return;
-  }
-
-  const id = $("articleId").value;
-
-  const article = {
-    title: $("articleTitle").value.trim(),
-    slug: $("articleSlug").value.trim(),
-    excerpt: $("articleExcerpt").value.trim(),
-    content: $("articleContent").value.trim(),
-    image_url: $("articleImage").value.trim() || null,
-    status: $("articleStatus").value
-  };
-
-  status("articleStatusMessage", "جاري الحفظ...");
-
-  const result = id
-    ? await supabase.from("articles").update(article).eq("id", id)
-    : await supabase.from("articles").insert(article);
-
-  if (result.error) {
-    status("articleStatusMessage", "خطأ: " + result.error.message);
-    return;
-  }
-
-  status("articleStatusMessage", "تم حفظ المقال بنجاح.");
-
-  $("articleForm").reset();
-  $("articleId").value = "";
-  $("saveArticleButton").textContent = "حفظ المقال";
-
-  await loadArticles();
-}
-
-// تعديل مقال
-function editArticle(id, articles) {
-  const article = articles.find(item => String(item.id) === String(id));
-
-  if (!article) return;
-
-  $("articleId").value = article.id;
-  $("articleTitle").value = article.title || "";
-  $("articleSlug").value = article.slug || "";
-  $("articleExcerpt").value = article.excerpt || "";
-  $("articleContent").value = article.content || "";
-  $("articleImage").value = article.image_url || "";
-  $("articleStatus").value = article.status || "draft";
-
-  $("saveArticleButton").textContent = "تحديث المقال";
-
-  $("articleForm").scrollIntoView({ behavior: "smooth" });
-}
-
-// حذف مقال
-async function deleteArticle(id) {
-  if (!confirm("هل تريد حذف هذا المقال؟")) return;
-
-  const { error } = await supabase
-    .from("articles")
-    .delete()
-    .eq("id", id);
-
-  if (error) {
-    status("articleStatusMessage", "خطأ الحذف: " + error.message);
-    return;
-  }
-
-  status("articleStatusMessage", "تم حذف المقال.");
-  await loadArticles();
-}
-
-// إعادة ضبط نموذج المقال
-function resetArticleForm() {
-  $("articleForm").reset();
-  $("articleId").value = "";
-  $("saveArticleButton").textContent = "حفظ المقال";
-}
-
-// تحميل الرسائل
-async function loadMessages() {
-  const list = $("messagesList");
-
-  if (!list) return;
-
-  list.textContent = "جاري تحميل الرسائل...";
-
-  const { data, error } = await supabase
-    .from("contact_messages")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    list.textContent = "خطأ تحميل الرسائل: " + error.message;
-    return;
-  }
-
-  $("messagesCount").textContent = data.length;
-
-  if (!data.length) {
-    list.textContent = "لا توجد رسائل.";
-    return;
-  }
-
-  list.innerHTML = data.map(message => `
-    <article class="admin-item">
-      <h3>${escapeHTML(message.subject || "رسالة زائر")}</h3>
-      <p>الاسم: ${escapeHTML(message.name || "غير محدد")}</p>
-      <p>البريد: ${escapeHTML(message.email || "غير محدد")}</p>
-      <p>الرسالة: ${escapeHTML(message.message || "")}</p>
-    </article>
-  `).join("");
-}
-
-// تحميل المستخدمين وإدارة صلاحياتهم
-async function loadUsers() {
-  const list = $("usersList");
-
-  if (!list) return;
-
-  list.textContent = "جاري تحميل المستخدمين...";
-  status("usersStatus", "جاري تحميل المستخدمين...");
-
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id, role")
-    .order("id", { ascending: true });
-
-  if (error) {
-    console.error(error);
-    list.textContent = "تعذر تحميل المستخدمين.";
-    status("usersStatus", "خطأ تحميل المستخدمين: " + error.message);
-    return;
-  }
-
-  if ($("usersCount")) {
-    $("usersCount").textContent = data.length;
-  }
-
-  if (!data.length) {
-    list.textContent = "لا يوجد مستخدمون حالياً.";
-    status("usersStatus", "لا يوجد مستخدمون.");
-    return;
-  }
-
-  list.innerHTML = data.map(user => `
-    <article class="admin-item">
-      <h3>المستخدم</h3>
-
-      <p>رقم الحساب: ${escapeHTML(user.id)}</p>
-
-      <p>
-        الصلاحية الحالية:
-        <strong>${escapeHTML(user.role || "user")}</strong>
-      </p>
-
-      ${user.id !== currentUser.id ? `
-        <select data-role-select="${escapeHTML(user.id)}">
-          <option value="user" ${user.role === "user" ? "selected" : ""}>
-            مستخدم
-          </option>
-
-          <option value="admin" ${user.role === "admin" ? "selected" : ""}>
-            مدير
-          </option>
-        </select>
-
-        <button
-          type="button"
-          data-role-save="${escapeHTML(user.id)}">
-          حفظ الصلاحية
-        </button>
-      ` : `
-        <p>هذا حساب المدير الحالي ولا يمكن تغيير صلاحيته.</p>
-      `}
-    </article>
-  `).join("");
-
-  list.querySelectorAll("[data-role-save]").forEach(button => {
-    button.addEventListener("click", async () => {
-      const userId = button.dataset.roleSave;
-
-      const select = list.querySelector(
-        `[data-role-select="${userId}"]`
-      );
-
-      if (!select) return;
-
-      const newRole = select.value;
-
-      if (!["admin", "user"].includes(newRole)) {
-        alert("الصلاحية غير صحيحة.");
-        return;
-      }
-
-      if (!confirm("هل تريد تغيير صلاحية هذا المستخدم؟")) {
-        return;
-      }
-
-      button.disabled = true;
-      button.textContent = "جاري الحفظ...";
-
-      try {
-        const { data: result, error: updateError } =
-          await supabase.rpc("admin_update_user_role", {
-            target_user_id: userId,
-            new_role: newRole
-          });
-
-        if (updateError) {
-          alert("فشل تغيير الصلاحية: " + updateError.message);
-          return;
-        }
-
-        if (result !== true) {
-          alert("لم يتم تأكيد تغيير الصلاحية.");
-          return;
-        }
-
-        alert("تم تغيير صلاحية المستخدم بنجاح.");
-        await loadUsers();
-
-      } catch (error) {
-        console.error(error);
-        alert("حدث خطأ: " + error.message);
-
-      } finally {
-        button.disabled = false;
-        button.textContent = "حفظ الصلاحية";
-      }
-    });
-  });
-
-  status("usersStatus", "تم تحميل " + data.length + " مستخدم بنجاح.");
-}
-
-// تسجيل الخروج
-async function logout() {
-  const { error } = await supabase.auth.signOut();
-
-  if (error) {
-    alert(error.message);
-    return;
-  }
-
-  currentUser = null;
-
-  $("adminDashboard").hidden = true;
-  $("adminDashboard").style.display = "";
-
-  $("loginSection").hidden = false;
-  $("loginForm").reset();
-}
-
-// تشغيل الصفحة
-document.addEventListener("DOMContentLoaded", async () => {
-  $("loginForm").addEventListener("submit", login);
-
-  $("articleForm").addEventListener("submit", saveArticle);
-
-  $("cancelEditButton").addEventListener("click", resetArticleForm);
-
-  $("logoutButton").addEventListener("click", logout);
-
-  $("menuToggle").addEventListener("click", () => {
-    $("sidebar").classList.toggle("active");
-  });
-
-  try {
-    const { data, error } = await supabase.auth.getSession();
-
-    if (error) throw error;
-
-    if (data.session?.user) {
-      await checkAdmin(data.session.user);
-    }
-  } catch (error) {
-    console.error(error);
-    status("loginStatus", "خطأ تشغيل لوحة الإدارة: " + error.message);
-  }
-});
