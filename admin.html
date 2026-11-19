@@ -1,4 +1,4 @@
-الكتابة
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -17,7 +17,6 @@
 
 <div class="admin-layout">
 
-  <!-- القائمة الجانبية -->
   <aside class="sidebar" id="sidebar">
 
     <a href="index.html" class="brand">
@@ -40,7 +39,6 @@
 
   </aside>
 
-  <!-- المحتوى الرئيسي -->
   <main class="main-content">
 
     <header class="topbar">
@@ -57,6 +55,7 @@
     </header>
 
     <!-- تسجيل الدخول -->
+
     <section id="loginSection" class="panel">
 
       <h1>تسجيل دخول المدير</h1>
@@ -66,33 +65,39 @@
       <form id="loginForm">
 
         <label for="adminEmail">البريد الإلكتروني</label>
+
         <input
           id="adminEmail"
+          name="email"
           type="email"
           required
           autocomplete="username"
         >
 
         <label for="adminPassword">كلمة المرور</label>
+
         <input
           id="adminPassword"
+          name="password"
           type="password"
           required
           autocomplete="current-password"
         >
 
-        <button type="submit">دخول</button>
+        <button type="submit" id="loginButton">
+          دخول
+        </button>
 
       </form>
 
-      <p id="loginStatus" role="status"></p>
+      <p id="loginStatus" role="status" aria-live="polite"></p>
 
     </section>
 
     <!-- لوحة المدير -->
+
     <section id="adminDashboard" hidden>
 
-      <!-- الترحيب -->
       <section id="dashboard" class="welcome">
 
         <h1>مرحباً بك في إدارة NEXORA</h1>
@@ -104,6 +109,7 @@
       </section>
 
       <!-- الإحصائيات -->
+
       <div class="stats-grid">
 
         <article class="stat-card">
@@ -124,6 +130,7 @@
       </div>
 
       <!-- إدارة المقالات -->
+
       <section class="panel" id="articles">
 
         <h2>إدارة المقالات</h2>
@@ -167,6 +174,7 @@
           >
 
           <label for="articleStatus">حالة المقال</label>
+
           <select id="articleStatus">
             <option value="draft">مسودة</option>
             <option value="published">منشور</option>
@@ -193,6 +201,7 @@
       </section>
 
       <!-- رسائل الزوار -->
+
       <section class="panel" id="messages">
 
         <h2>رسائل الزوار</h2>
@@ -206,6 +215,7 @@
       </section>
 
       <!-- إدارة المستخدمين -->
+
       <section class="panel" id="users">
 
         <h2>إدارة المستخدمين</h2>
@@ -224,7 +234,8 @@
 
       </section>
 
-      <!-- نظام إشعارات NEXORA -->
+      <!-- الإشعارات -->
+
       <section class="panel" id="notifications">
 
         <h2>الإشعارات</h2>
