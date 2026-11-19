@@ -1,4 +1,4 @@
-الكتابة
+
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 const SUPABASE_URL = "https://ujgcdhfldomgdksgkoyy.supabase.co";
@@ -8,85 +8,42 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentUser = null;
 
-const $ = id => document.getElementById(id);
+const $ = (id) => document.getElementById(id);
 
-function status(id, message) {
-  const element = $(id);
-  if (element) element.textContent = message;
+function showStatus(message, type = "error") {
+  const status = $("loginStatus");
+  if (!status) return;
+
+  status.textContent = message;
+  status.dataset.type = type;
+  status.hidden = false;
 }
-
-function escapeHTML(value) {
-  return String(value ?? "").replace(/[&<>"']/g, char => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;"
-  })[char]);
-}
-
-// =====================================
-// إظهار لوحة الإدارة
-// =====================================
-
-function showDashboard(user) {
-  currentUser = user;
-
-  $("loginSection").hidden = true;
-
-  const dashboard = $("adminDashboard");
-
-  dashboard.hidden = false;
-  dashboard.style.display = "block";
-  dashboard.style.visibility = "visible";
-  dashboard.style.minHeight = "500px";
-  dashboard.style.padding = "20px";
-
-  $("adminEmailDisplay").textContent = user.email || "";
-
-  console.log("NEXORA DASHBOARD DISPLAYED");
-}
-
-// =====================================
-// التحقق من المدير
-// =====================================
 
 async function checkAdmin(user) {
-  status("loginStatus", "جاري التحقق من صلاحيات المدير...");
-
   const { data: profile, error } = await supabase
     .from("profiles")
     .select("id, role")
     .eq("id", user.id)
     .maybeSingle();
 
-  if (error) {
-    console.error(error);
-    status("loginStatus", "خطأ قاعدة البيانات: " + error.message);
-    return;
-  }
-
-  if (!profile || profile.role !== "admin") {
+  if (error || !profile || profile.role !== "admin") {
     await supabase.auth.signOut();
-
     currentUser = null;
 
-    status("loginStatus", "هذا الحساب ليس مديراً.");
+    $("adminDashboard").hidden = true;
+    $("loginSection").hidden = false;
 
-    return;
+    showStatus("هذا الحساب لا يملك صلاحية المدير.");
+    return false;
   }
 
-  showDashboard(user);
+  currentUser = user;
 
-  await loadArticles();
-  await loadMessages();
-  await loadUsers();
-  await loadNotifications();
+  $("loginSection").hidden = true;
+  $("adminDashboard").hidden = false;
+
+  return true;
 }
-
-// =====================================
-// تسجيل الدخول
-// =====================================
 
 async function login(event) {
   event.preventDefault();
@@ -94,11 +51,13 @@ async function login(event) {
   const email = $("adminEmail").value.trim();
   const password = $("adminPassword").value;
 
-  status("loginStatus", "جاري تسجيل الدخول...");
+  if (!email || !password) {
+    showStatus("يرجى إدخال البريد الإلكتروني وكلمة المرور.");
+    return;
+  }
 
-  const button = $("loginForm").querySelector('button[type="submit"]');
-
-  button.disabled = true;
+  const loginButton = $("loginButton");
+  if (loginButton) loginButton.disabled = true;
 
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -107,47 +66,48 @@ async function login(event) {
     });
 
     if (error) {
-      status("loginStatus", "خطأ الدخول: " + error.message);
+      showStatus("فشل تسجيل الدخول: " + error.message);
       return;
     }
 
     await checkAdmin(data.user);
 
   } catch (error) {
-    console.error(error);
-    status("loginStatus", "حدث خطأ: " + error.message);
-
+    showStatus("حدث خطأ: " + error.message);
   } finally {
-    button.disabled = false;
+    if (loginButton) loginButton.disabled = false;
   }
 }
 
-// =====================================
-// تحميل المقالات
-// =====================================
+async function logout() {
+  await supabase.auth.signOut();
+  currentUser = null;
 
-async function loadArticles() {
-  const list = $("articlesList");
+  $("adminDashboard").hidden = true;
+  $("loginSection").hidden = false;
 
-  if (!list) return;
+  $("adminEmail").value = "";
+  $("adminPassword").value = "";
+}
 
-  list.textContent = "جاري تحميل المقالات...";
+async function initialize() {
+  const loginForm = $("loginForm");
 
-  const { data, error } = await supabase
-    .from("articles")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    list.textContent = "خطأ تحميل المقالات: " + error.message;
-    return;
+  if (loginForm) {
+    loginForm.addEventListener("submit", login);
   }
 
-  if ($("articlesCount")) {
-    $("articlesCount").textContent = data.length;
+  const logoutButton = $("logoutButton");
+
+  if (logoutButton) {
+    logoutButton.addEventListener("click", logout);
   }
 
-  if (!data.length) {
-    list.textContent = "لا توجد مقالات حالياً.";
-    return;
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (session) {
+    await checkAdmin(session.user);
   }
+}
+
+initialize();
