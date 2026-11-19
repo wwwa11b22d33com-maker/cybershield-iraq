@@ -70,6 +70,7 @@ async function checkAdmin(user) {
 
   await loadArticles();
   await loadMessages();
+  await loadUsers();
 }
 
 // تسجيل الدخول
@@ -272,6 +273,48 @@ async function loadMessages() {
   `).join("");
 }
 
+// تحميل المستخدمين
+async function loadUsers() {
+  const list = $("usersList");
+
+  if (!list) return;
+
+  list.textContent = "جاري تحميل المستخدمين...";
+  status("usersStatus", "جاري تحميل المستخدمين...");
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, role")
+    .order("id", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    list.textContent = "تعذر تحميل المستخدمين.";
+    status("usersStatus", "خطأ تحميل المستخدمين: " + error.message);
+    return;
+  }
+
+  if ($("usersCount")) {
+    $("usersCount").textContent = data.length;
+  }
+
+  if (!data.length) {
+    list.textContent = "لا يوجد مستخدمون حالياً.";
+    status("usersStatus", "لا يوجد مستخدمون.");
+    return;
+  }
+
+  list.innerHTML = data.map(user => `
+    <article class="admin-item">
+      <h3>المستخدم</h3>
+      <p>رقم الحساب: ${escapeHTML(user.id)}</p>
+      <p>الصلاحية: ${escapeHTML(user.role || "user")}</p>
+    </article>
+  `).join("");
+
+  status("usersStatus", "تم تحميل " + data.length + " مستخدم بنجاح.");
+}
+
 // تسجيل الخروج
 async function logout() {
   const { error } = await supabase.auth.signOut();
@@ -317,4 +360,3 @@ document.addEventListener("DOMContentLoaded", async () => {
     status("loginStatus", "خطأ تشغيل لوحة الإدارة: " + error.message);
   }
 });
-
